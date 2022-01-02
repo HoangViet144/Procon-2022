@@ -9,6 +9,7 @@ import { convertP6toP3 } from "src/util/convert"
 import Header from "src/views/maingame/header";
 import ImagePieces from "./imagePieces";
 import ControlBlock from "./controlBlock";
+import FreeStyleDrag from "./freestyleDrag";
 import { BTN_VALUE } from "./controlBlock";
 import { rotateMatrix90 } from "src/util/util";
 
@@ -42,8 +43,6 @@ const MainGame = () => {
     rotate: [],
     action: []
   })
-
-  useEffect(() => { console.log(curChoice) }, [curChoice])
 
   const setInitAnswer = () => {
     let rotateAr = [];
@@ -117,9 +116,7 @@ const MainGame = () => {
   }
 
   const handleAction = (action, choice = null, actionType = BTN_VALUE.NORMAL_ACT, newActionLst = []) => {
-    console.log(choice, curChoice)
     if (choice === null) choice = curChoice;
-    console.log(action, choice)
     if (choice.id === '') return;
 
     const indRow = choice.indRow;
@@ -159,11 +156,7 @@ const MainGame = () => {
     curPieceMatrix[indRow][indCol] = targetPiece;
     curPieceMatrix[targetRow][targetCol] = curPiece;
     setPieces(curPieceMatrix);
-    setCurChoice(cur => ({
-      ...cur,
-      indCol: curPiece.indCol,
-      indRow: curPiece.indRow
-    }));
+
 
     switch (actionType) {
       case BTN_VALUE.UNDO:
@@ -171,10 +164,22 @@ const MainGame = () => {
           ...cur,
           action: newActionLst
         }));
+
+        setCurChoice(cur => ({
+          id: choice.id,
+          indCol: curPiece.indCol,
+          indRow: curPiece.indRow
+        }));
         break;
       case BTN_VALUE.NORMAL_ACT:
         setRedoAct([]);
       default:
+        setCurChoice(cur => ({
+          ...cur,
+          indCol: curPiece.indCol,
+          indRow: curPiece.indRow
+        }));
+
         const newAction = [...answer.action]
         newAction.push({ id: choice.id, action });
         setAnswer(cur => ({
@@ -286,6 +291,9 @@ const MainGame = () => {
             pieces={pieces}
             styleObj={styleObj}
           />
+          <FreeStyleDrag
+            pieces={pieces}
+          />
         </Grid>
         <Grid container item xs={3}>
           <ControlBlock
@@ -304,6 +312,9 @@ const MainGame = () => {
             pieceWidth={initialConfig.colSegment === 0 ? 0 : Math.round(initialConfig.width / initialConfig.colSegment)}
             serverInfo={serverInfo}
           />
+        </Grid>
+        <Grid item xs={12}>
+
         </Grid>
       </Grid>
     </StyledDiv >
