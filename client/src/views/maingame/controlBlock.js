@@ -75,7 +75,7 @@ const ControlBlock = ({ getImage, answer, handleAction, handleRotate, handleUndo
       { icon: <KeyboardArrowLeftIcon />, value: BTN_VALUE.LEFT, func: handleAction, ref: btnLeftRef },
       { icon: <KeyboardArrowDownIcon />, value: BTN_VALUE.DOWN, func: handleAction, ref: btnDownRef },
       { icon: <KeyboardArrowRightIcon />, value: BTN_VALUE.RIGHT, func: handleAction, ref: btnRightRef },
-      { icon: "Remove gap", value: '', func: toggleStyle }
+      // { icon: "Remove gap", value: '', func: toggleStyle }
     ]
   ]
 
