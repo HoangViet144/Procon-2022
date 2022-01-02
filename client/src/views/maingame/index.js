@@ -43,6 +43,8 @@ const MainGame = () => {
     action: []
   })
 
+  useEffect(() => { console.log(curChoice) }, [curChoice])
+
   const setInitAnswer = () => {
     let rotateAr = [];
     for (let i = 0; i < initialConfig.rowSegment * initialConfig.colSegment; i++) rotateAr.push(0);
@@ -115,6 +117,7 @@ const MainGame = () => {
   }
 
   const handleAction = (action, choice = null, actionType = BTN_VALUE.NORMAL_ACT, newActionLst = []) => {
+    console.log(choice, curChoice)
     if (choice === null) choice = curChoice;
     console.log(action, choice)
     if (choice.id === '') return;
