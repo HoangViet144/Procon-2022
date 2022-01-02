@@ -113,12 +113,13 @@ const MainGame = () => {
     setAnswer(newAnswer);
   }
 
-  const handleAction = (action) => {
-    console.log(action, curChoice)
-    if (curChoice.id === '') return;
+  const handleAction = (action, choice = null, isUndo = false, newActionLst = []) => {
+    if (choice === null) choice = curChoice;
+    console.log(action, choice)
+    if (choice.id === '') return;
 
-    const indRow = curChoice.indRow;
-    const indCol = curChoice.indCol;
+    const indRow = choice.indRow;
+    const indCol = choice.indCol;
     const curPieceMatrix = [...pieces];
     let targetRow = indRow;
     let targetCol = indCol;
@@ -160,12 +161,48 @@ const MainGame = () => {
       indRow: curPiece.indRow
     }));
 
-    const newAction = [...answer.action]
-    newAction.push({ id: curChoice.id, action });
-    setAnswer(cur => ({
-      ...cur,
-      action: newAction
-    }))
+    if (isUndo) {
+      setAnswer(cur => ({
+        ...cur,
+        action: newActionLst
+      }))
+    } else {
+      const newAction = [...answer.action]
+      newAction.push({ id: choice.id, action });
+      setAnswer(cur => ({
+        ...cur,
+        action: newAction
+      }))
+    }
+
+  }
+
+  const handleUndoAction = () => {
+    const curActionLst = [...answer.action];
+    if (curActionLst.length === 0) return;
+    const lastAction = curActionLst.at(-1);
+    const newActionLst = curActionLst.slice(0, -1);
+
+    const allPieces = pieces.flat();
+    const lastPiece = allPieces.filter(ele => ele.id === lastAction.id)[0];
+
+    const inverseAction = {
+      [BTN_VALUE.LEFT]: BTN_VALUE.RIGHT,
+      [BTN_VALUE.RIGHT]: BTN_VALUE.LEFT,
+      [BTN_VALUE.UP]: BTN_VALUE.DOWN,
+      [BTN_VALUE.DOWN]: BTN_VALUE.UP,
+    }
+
+    handleAction(
+      inverseAction[lastAction.action],
+      {
+        id: lastAction.id,
+        indRow: lastPiece.indRow,
+        indCol: lastPiece.indCol
+      },
+      true,
+      newActionLst
+    );
   }
 
   useEffect(() => {
@@ -223,6 +260,7 @@ const MainGame = () => {
             handleAction={handleAction}
             getImage={getImage}
             handleRotate={handleRotate}
+            handleUndoAction={handleUndoAction}
             maxChoice={initialConfig.maxChoice}
             costChoose={initialConfig.chooseCost}
             costSwap={initialConfig.swapCost}
