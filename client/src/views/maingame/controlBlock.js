@@ -42,6 +42,7 @@ const ControlBlock = ({ getImage, answer, handleAction, handleRotate, handleUndo
   const btnDownRef = useRef();
   const btnRedoRef = useRef();
   const btnUndoRef = useRef();
+  const btnRotate = useRef();
 
   const sendAnswer = async () => {
     try {
@@ -68,7 +69,7 @@ const ControlBlock = ({ getImage, answer, handleAction, handleRotate, handleUndo
       { icon: <UndoIcon />, value: BTN_VALUE.UNDO, func: handleUndoAction, ref: btnUndoRef },
       { icon: <KeyboardArrowUpIcon />, value: BTN_VALUE.UP, func: handleAction, ref: btnUpRef },
       { icon: <RedoIcon />, value: BTN_VALUE.REDO, func: handleRedoAction, ref: btnRedoRef },
-      { icon: "90deg", value: ROTATE_ANGLE.DEG90, func: handleRotate },
+      { icon: "90deg", value: ROTATE_ANGLE.DEG90, func: handleRotate, ref: btnRotate },
       { icon: <VisibilityIcon />, value: '', func: toggleShowId }
     ],
     [
@@ -163,6 +164,9 @@ const ControlBlock = ({ getImage, answer, handleAction, handleRotate, handleUndo
     }
     if (event.code === "KeyE") {
       btnRedoRef.current.click();
+    }
+    if (event.code === "KeyR") {
+      btnRotate.current.click();
     }
   };
 
