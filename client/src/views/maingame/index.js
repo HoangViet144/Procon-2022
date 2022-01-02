@@ -36,6 +36,7 @@ const MainGame = () => {
   const [styleObj, setStyleObj] = useState({ spacing: 0, padding: 0, hideId: true });
   const [pieces, setPieces] = useState([]);
   const [curChoice, setCurChoice] = useState({ id: '' });
+  const [redoAct, setRedoAct] = useState([]);
 
   const [answer, setAnswer] = useState({
     rotate: [],
@@ -113,7 +114,7 @@ const MainGame = () => {
     setAnswer(newAnswer);
   }
 
-  const handleAction = (action, choice = null, isUndo = false, newActionLst = []) => {
+  const handleAction = (action, choice = null, actionType = BTN_VALUE.NORMAL_ACT, newActionLst = []) => {
     if (choice === null) choice = curChoice;
     console.log(action, choice)
     if (choice.id === '') return;
@@ -161,20 +162,23 @@ const MainGame = () => {
       indRow: curPiece.indRow
     }));
 
-    if (isUndo) {
-      setAnswer(cur => ({
-        ...cur,
-        action: newActionLst
-      }))
-    } else {
-      const newAction = [...answer.action]
-      newAction.push({ id: choice.id, action });
-      setAnswer(cur => ({
-        ...cur,
-        action: newAction
-      }))
+    switch (actionType) {
+      case BTN_VALUE.UNDO:
+        setAnswer(cur => ({
+          ...cur,
+          action: newActionLst
+        }));
+        break;
+      case BTN_VALUE.NORMAL_ACT:
+        setRedoAct([]);
+      default:
+        const newAction = [...answer.action]
+        newAction.push({ id: choice.id, action });
+        setAnswer(cur => ({
+          ...cur,
+          action: newAction
+        }));
     }
-
   }
 
   const handleUndoAction = () => {
@@ -200,9 +204,35 @@ const MainGame = () => {
         indRow: lastPiece.indRow,
         indCol: lastPiece.indCol
       },
-      true,
+      BTN_VALUE.UNDO,
       newActionLst
     );
+
+    setRedoAct(cur => [...cur, lastAction]);
+  }
+
+  const handleRedoAction = () => {
+    setRedoAct(cur => {
+      if (cur.length === 0) return [];
+      const curRedoLst = [...cur];
+      const lastAction = curRedoLst.at(-1);
+
+      const allPieces = pieces.flat();
+      const lastPiece = allPieces.filter(ele => ele.id === lastAction.id)[0];
+
+      handleAction(
+        lastAction.action,
+        {
+          id: lastAction.id,
+          indRow: lastPiece.indRow,
+          indCol: lastPiece.indCol
+        },
+        BTN_VALUE.REDO
+      );
+
+      cur.pop();
+      return cur;
+    })
   }
 
   useEffect(() => {
@@ -261,6 +291,7 @@ const MainGame = () => {
             getImage={getImage}
             handleRotate={handleRotate}
             handleUndoAction={handleUndoAction}
+            handleRedoAction={handleRedoAction}
             maxChoice={initialConfig.maxChoice}
             costChoose={initialConfig.chooseCost}
             costSwap={initialConfig.swapCost}

@@ -21,6 +21,7 @@ export const BTN_VALUE = {
   RIGHT: 4,
   UP: 5,
   DOWN: 6,
+  NORMAL_ACT: 7
 };
 
 export const ROTATE_ANGLE = {
@@ -29,7 +30,7 @@ export const ROTATE_ANGLE = {
   DEG270: 3
 };
 
-const ControlBlock = ({ getImage, answer, handleAction, handleRotate, handleUndoAction, maxChoice,
+const ControlBlock = ({ getImage, answer, handleAction, handleRotate, handleUndoAction, handleRedoAction, maxChoice,
   costSwap, costChoose, toggleStyle, toggleShowId, pieceWidth, pieceHeight, serverInfo }) => {
   const [finalAnswer, setFinalAnswer] = useState('');
   const [totalCost, setTotalCost] = useState(0);
@@ -60,7 +61,7 @@ const ControlBlock = ({ getImage, answer, handleAction, handleRotate, handleUndo
     [
       { icon: <UndoIcon />, value: BTN_VALUE.UNDO, func: handleUndoAction },
       { icon: <KeyboardArrowUpIcon />, value: BTN_VALUE.UP, func: handleAction },
-      { icon: <RedoIcon />, value: BTN_VALUE.REDO, func: handleAction },
+      { icon: <RedoIcon />, value: BTN_VALUE.REDO, func: handleRedoAction },
       { icon: "90deg", value: ROTATE_ANGLE.DEG90, func: handleRotate },
       { icon: <VisibilityIcon />, value: '', func: toggleShowId }
     ],
@@ -226,6 +227,7 @@ ControlBlock.propTypes = {
   getImage: PropTypes.func.isRequired,
   handleAction: PropTypes.func.isRequired,
   handleUndoAction: PropTypes.func.isRequired,
+  handleRedoAction: PropTypes.func.isRequired,
   handleRotate: PropTypes.func.isRequired,
   maxChoice: PropTypes.number.isRequired,
   costSwap: PropTypes.number.isRequired,
