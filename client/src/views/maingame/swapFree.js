@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button, Grid } from '@mui/material';
 import ImagePieces from './imagePieces';
 
@@ -7,6 +7,7 @@ import ImagePieces from './imagePieces';
 const SwapFree = ({ initialConfig, rotate, pieces, styleObj, updateDrag, setUpdateDrag, handleRotateBasedOnDrag }) => {
   const [curChoice, setCurChoice] = useState({ id: '' });
   const [localPieces, setLocalPieces] = useState([]);
+  const btnRotateRef = useRef();
 
   useEffect(() => {
     if (pieces.length <= 0) return;
@@ -29,7 +30,6 @@ const SwapFree = ({ initialConfig, rotate, pieces, styleObj, updateDrag, setUpda
   const handleChoose = (ele) => {
     setCurChoice(cur => {
       if (cur.id === '') {
-        console.log(ele)
         return ele;
       }
       if (ele.id === '') return { id: '' };
@@ -57,7 +57,6 @@ const SwapFree = ({ initialConfig, rotate, pieces, styleObj, updateDrag, setUpda
 
   const handleRotate = () => {
     if (curChoice.id === '') return;
-    console.log(curChoice)
     const newLocalPieces = localPieces.slice().map(e => e.slice())
     const curPiece = newLocalPieces[curChoice.indRow][curChoice.indCol];
     curPiece.rotate = (curPiece.rotate + 1) % 4;
@@ -65,6 +64,19 @@ const SwapFree = ({ initialConfig, rotate, pieces, styleObj, updateDrag, setUpda
 
     handleRotateBasedOnDrag(curPiece.id, curPiece.rotate);
   }
+
+  const keyUpHandler = (event) => {
+    if (event.code === "KeyT") {
+      btnRotateRef.current.click();
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener("keyup", keyUpHandler);
+    return () => {
+      window.removeEventListener("keyup", keyUpHandler);
+    };
+  }, []);
 
   return (
     <Grid container alignItems='center'>
@@ -80,7 +92,7 @@ const SwapFree = ({ initialConfig, rotate, pieces, styleObj, updateDrag, setUpda
         />
       </Grid>
       <Grid item>
-        <Button variant='outlined' onClick={() => handleRotate()}>90 swap</Button>
+        <Button variant='outlined' onClick={() => handleRotate()} ref={btnRotateRef}>90 swap</Button>
       </Grid>
     </Grid>
   )
