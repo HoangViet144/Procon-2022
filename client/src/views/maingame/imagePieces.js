@@ -17,6 +17,7 @@ const StyledToggleButton = styled(ToggleButton)((props) => ({
 }));
 
 const StyledGrid = styled(Grid)((props) => ({
+  marginTop: props.marginTop,
   zoom: props.zoom
 }));
 
@@ -30,7 +31,7 @@ const ImagePieces = ({ pieces, curChoice, setCurChoice, styleObj, zoom, rotate, 
     return rotate[rotateInd];
   }
   return (
-    <StyledGrid container item spacing={styleObj.spacing} zoom={zoom}>
+    <StyledGrid container item spacing={styleObj.spacing} zoom={zoom} marginTop={styleObj.marginTop}>
       {pieces.map((row, indR) => (
         <Grid container item spacing={styleObj.spacing} key={indR}>
           {row.map((ele, ind) => (

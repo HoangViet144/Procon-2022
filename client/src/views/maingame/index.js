@@ -10,6 +10,7 @@ import Header from "src/views/maingame/header";
 import ImagePieces from "./imagePieces";
 import ControlBlock from "./controlBlock";
 import FreeStyleDrag from "./freestyleDrag";
+import SwapFree from "./swapFree";
 import { BTN_VALUE } from "./controlBlock";
 import { createImageURI } from "src/util/util";
 
@@ -34,7 +35,7 @@ const MainGame = () => {
     swapCost: 0,
   });
 
-  const [styleObj, setStyleObj] = useState({ spacing: 0, padding: 0, hideId: true });
+  const [styleObj, setStyleObj] = useState({ spacing: 0, padding: 0, hideId: true, marginTop: 0 });
   const [updateDrag, setUpdateDrag] = useState(false);
   const [pieces, setPieces] = useState([]);
   const [curChoice, setCurChoice] = useState({ id: '' });
@@ -112,6 +113,7 @@ const MainGame = () => {
   }
 
   const handleRotateBasedOnDrag = (id, rotateValue) => {
+    console.log(id, rotateValue)
     if (id === '') return;
 
     let indCol = +id.substring(0, id.indexOf("-"));
@@ -301,7 +303,7 @@ const MainGame = () => {
             pieces={pieces}
             styleObj={styleObj}
           />
-          <FreeStyleDrag
+          {/* <FreeStyleDrag
             handleRotateBasedOnDrag={handleRotateBasedOnDrag}
             updateDrag={updateDrag}
             setUpdateDrag={setUpdateDrag}
@@ -309,6 +311,15 @@ const MainGame = () => {
             height={initialConfig.height}
             zoom={initialConfig.width > 1000 ? 0.4 : 1}
             pieces={pieces}
+          /> */}
+          <SwapFree
+            initialConfig={initialConfig}
+            pieces={pieces}
+            rotate={answer.rotate}
+            styleObj={styleObj}
+            updateDrag={updateDrag}
+            setUpdateDrag={setUpdateDrag}
+            handleRotateBasedOnDrag={handleRotateBasedOnDrag}
           />
         </Grid>
         <Grid container item xs={3}>
@@ -328,9 +339,6 @@ const MainGame = () => {
             pieceWidth={initialConfig.colSegment === 0 ? 0 : Math.round(initialConfig.width / initialConfig.colSegment)}
             serverInfo={serverInfo}
           />
-        </Grid>
-        <Grid item xs={12}>
-
         </Grid>
       </Grid>
     </StyledDiv >

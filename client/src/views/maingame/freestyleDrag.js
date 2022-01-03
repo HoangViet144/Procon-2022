@@ -167,7 +167,7 @@ const FreeStyleDrag = ({ pieces, zoom, width, height, updateDrag, setUpdateDrag,
             }
             break;
           case 'up':
-            if (Math.abs(touchBeganX - startX) <= 5 && Math.abs(touchBeganY - startY) <= 5) {
+            if (Math.abs(touchBeganX - startX) <= 2 && Math.abs(touchBeganY - startY) <= 2) {
               for (let rectangle of rectangleLst) {
                 if (rectangle.isDragging) {
                   rotatePiece(rectangle);
