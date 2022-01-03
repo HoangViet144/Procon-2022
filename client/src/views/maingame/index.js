@@ -95,6 +95,8 @@ const MainGame = () => {
     setInitAnswer();
 
     setUpdateDrag(true);
+
+    setCurChoice({ id: '' });
   }
 
   const handleRotate = () => {
@@ -113,7 +115,6 @@ const MainGame = () => {
   }
 
   const handleRotateBasedOnDrag = (id, rotateValue) => {
-    console.log(id, rotateValue)
     if (id === '') return;
 
     let indCol = +id.substring(0, id.indexOf("-"));
@@ -137,25 +138,21 @@ const MainGame = () => {
 
     switch (action) {
       case BTN_VALUE.UP:
-        if (indRow === 0) return;
-        targetRow = indRow - 1;
+        targetRow = (indRow - 1 + initialConfig.rowSegment) % initialConfig.rowSegment;
         targetCol = indCol;
 
         break;
       case BTN_VALUE.DOWN:
-        if (indRow === initialConfig.rowSegment - 1) return;
-        targetRow = indRow + 1;
+        targetRow = (indRow + 1) % initialConfig.rowSegment;
         targetCol = indCol;
         break;
       case BTN_VALUE.LEFT:
-        if (indCol === 0) return;
         targetRow = indRow;
-        targetCol = indCol - 1;
+        targetCol = (indCol - 1 + initialConfig.colSegment) % initialConfig.colSegment;
         break;
       case BTN_VALUE.RIGHT:
-        if (indCol === initialConfig.colSegment - 1) return;
         targetRow = indRow;
-        targetCol = indCol + 1;
+        targetCol = (indCol + 1) % initialConfig.colSegment;
         break;
       default:
         return;
