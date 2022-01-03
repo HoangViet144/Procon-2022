@@ -11,7 +11,7 @@ import ImagePieces from "./imagePieces";
 import ControlBlock from "./controlBlock";
 import FreeStyleDrag from "./freestyleDrag";
 import { BTN_VALUE } from "./controlBlock";
-import { rotateMatrix90 } from "src/util/util";
+import { rotateMatrix90, createImageURI } from "src/util/util";
 
 const StyledDiv = styled('div')({
   padding: 8,
@@ -35,6 +35,7 @@ const MainGame = () => {
   });
 
   const [styleObj, setStyleObj] = useState({ spacing: 0, padding: 0, hideId: true });
+  const [updateDrag, setUpdateDrag] = useState(false);
   const [pieces, setPieces] = useState([]);
   const [curChoice, setCurChoice] = useState({ id: '' });
   const [redoAct, setRedoAct] = useState([]);
@@ -73,6 +74,7 @@ const MainGame = () => {
         let piece = initData.slice(i, i + pieceHeight).map(ele => ele.slice(j, j + pieceWidth))
         pieceAr.push({
           data: piece,
+          imageUri: createImageURI(piece),
           width: pieceWidth,
           height: pieceHeight,
           indCol: indCol,
@@ -90,6 +92,8 @@ const MainGame = () => {
     setPieces(pieceMatrix);
 
     setInitAnswer();
+
+    setUpdateDrag(true);
   }
 
   const handleRotate = () => {
@@ -156,7 +160,6 @@ const MainGame = () => {
     curPieceMatrix[indRow][indCol] = targetPiece;
     curPieceMatrix[targetRow][targetCol] = curPiece;
     setPieces(curPieceMatrix);
-
 
     switch (actionType) {
       case BTN_VALUE.UNDO:
@@ -286,12 +289,20 @@ const MainGame = () => {
       <Grid container alignItems='start' >
         <Grid container item xs={9}>
           <ImagePieces
+            colSegment={initialConfig.colSegment}
+            rotate={answer.rotate}
+            zoom={initialConfig.width > 1000 ? 0.4 : 1}
             curChoice={curChoice}
             setCurChoice={setCurChoice}
             pieces={pieces}
             styleObj={styleObj}
           />
           <FreeStyleDrag
+            updateDrag={updateDrag}
+            setUpdateDrag={setUpdateDrag}
+            width={initialConfig.width}
+            height={initialConfig.height}
+            zoom={initialConfig.width > 1000 ? 0.4 : 1}
             pieces={pieces}
           />
         </Grid>

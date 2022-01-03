@@ -2,14 +2,12 @@ import PropTypes from 'prop-types';
 import { useRef, useEffect, useState } from 'react';
 import { styled } from '@mui/system';
 
-import { rotateMatrix90 } from "src/util/util";
-
-const StyledCanvas = styled('canvas')({
+const StyledCanvas = styled('canvas')((props) => ({
   borderWidth: 1,
   borderColor: 'black',
   borderStyle: 'solid',
-  marginTop: 50
-});
+  marginTop: 50,
+}));
 
 class Rectangle {
   constructor(x, y, indRow, indCol) {
@@ -19,28 +17,21 @@ class Rectangle {
     this.y = y;
     this.width = 0;
     this.height = 0;
+    this.initialWidth = 0;
+    this.initialHeight = 0;
     this.isDragging = false;
   }
 
-  render = function (ctx, piece) {
-    const data = piece.data;
-    let width = data[0].length;
-    let height = data.length;
-    this.width = width;
-    this.height = height;
-
-    const img = ctx.getImageData(this.x, this.y, width, height);
-    const pixels = img.data;
-
-    const flattenData = data.flat();
-    let imageIndex = 0;
-    for (let i = 0; i < flattenData.length; i++) {
-      pixels[imageIndex++] = flattenData[i].r; // r
-      pixels[imageIndex++] = flattenData[i].g; // g
-      pixels[imageIndex++] = flattenData[i].b; // b
-      pixels[imageIndex++] = 255; // a
-    }
-    ctx.putImageData(img, this.x, this.y);
+  render = function (ctx, piece, zoom = 1) {
+    let img = new Image;
+    img.onload = () => {
+      this.width = img.width * zoom;
+      this.height = img.height * zoom;
+      this.initialHeight = img.height;
+      this.initialWidth = img.width;
+      ctx.drawImage(img, this.x, this.y, img.width * zoom, img.height * zoom);
+    };
+    img.src = piece.imageUri;
   }
 }
 
@@ -97,19 +88,39 @@ const isHit = (shape, x, y) => {
   return false;
 }
 
-const FreeStyleDrag = ({ pieces }) => {
+const FreeStyleDrag = ({ pieces, zoom, width, height, updateDrag, setUpdateDrag }) => {
   const [localPieces, setLocalPieces] = useState([]);
   const canvasRef = useRef();
 
   const rotatePiece = (rectangle) => {
-    const curPieceMatrix = [...localPieces];
     const curPiece = { ...localPieces[rectangle.indRow][rectangle.indCol] };
-    curPiece.data = rotateMatrix90(curPiece.data);
-    curPieceMatrix[rectangle.indRow][rectangle.indCol] = curPiece;
+
+    const tmpCanvas = document.createElement("canvas");
+    const tmpCtx = tmpCanvas.getContext("2d");
+    tmpCtx.clearRect(0, 0, tmpCanvas.width, tmpCanvas.height);
+
+    tmpCanvas.width = rectangle.initialWidth;
+    tmpCanvas.height = rectangle.initialHeight;
+
+    let img = new Image;
+    img.onload = () => {
+      tmpCtx.drawImage(img, 0, 0);
+    };
+    img.src = curPiece.initialImgUri;
+
+    tmpCtx.translate(tmpCanvas.width / 2, tmpCanvas.height / 2);
+
+    curPiece.rotate = (curPiece.rotate + 1) % 4;
+    tmpCtx.rotate(curPiece.rotate * 90 * Math.PI / 180);
+    tmpCtx.drawImage(img, -img.width / 2, -img.height / 2);
+
+    curPiece.imageUri = tmpCanvas.toDataURL();
+
+    localPieces[rectangle.indRow][rectangle.indCol] = curPiece;
 
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
-    rectangle.render(ctx, curPiece)
+    rectangle.render(ctx, curPiece, zoom);
   }
 
   const drawPieces = (pieces) => {
@@ -127,8 +138,8 @@ const FreeStyleDrag = ({ pieces }) => {
 
     for (let i = 0; i < rows; i++) {
       for (let j = 0; j < cols; j++) {
-        const rectangle = new Rectangle(j * pieceWidth, i * pieceHeight, i, j);
-        rectangle.render(ctx, pieces[i][j]);
+        const rectangle = new Rectangle(j * pieceWidth * zoom, i * pieceHeight * zoom, i, j);
+        rectangle.render(ctx, pieces[i][j], zoom);
         rectangleLst.push(rectangle);
       }
     }
@@ -137,7 +148,7 @@ const FreeStyleDrag = ({ pieces }) => {
     let touchBeganY = 0;
     const mtt = new MouseTouchTracker(canvas,
       function (evtType, x, y) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        let reRender = false;
         switch (evtType) {
           case 'down':
             startX = x;
@@ -147,6 +158,7 @@ const FreeStyleDrag = ({ pieces }) => {
 
             for (let rectangle of rectangleLst) {
               if (isHit(rectangle, x, y)) {
+                reRender = true;
                 rectangle.isDragging = true;
                 break;
               }
@@ -165,6 +177,7 @@ const FreeStyleDrag = ({ pieces }) => {
             for (let rectangle of rectangleLst) {
               rectangle.isDragging = false;
             }
+
             break;
           case 'move':
             let dx = x - startX;
@@ -174,18 +187,22 @@ const FreeStyleDrag = ({ pieces }) => {
 
             for (let rectangle of rectangleLst) {
               if (rectangle.isDragging) {
+                reRender = true;
                 rectangle.x += dx;
                 rectangle.y += dy;
                 break;
               }
             }
+
             break;
         }
 
+        if (!reRender) return;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
         for (let i = 0; i < rows; i++) {
           for (let j = 0; j < cols; j++) {
             let index = i * cols + j;
-            rectangleLst[index].render(ctx, pieces[i][j]);
+            rectangleLst[index].render(ctx, pieces[i][j], zoom);
           }
         }
       }
@@ -194,10 +211,22 @@ const FreeStyleDrag = ({ pieces }) => {
 
   useEffect(() => {
     if (pieces.length <= 0) return;
-    if (localPieces.length > 0) return;
-    setLocalPieces(pieces.slice().map(ele => ele.slice()));
+    if (!updateDrag) return;
+    setUpdateDrag(false);
+    const newMatrixPieces = pieces.slice().map(ele => ele.slice());
+    for (let i = 0; i < newMatrixPieces.length; i++) {
+      for (let j = 0; j < newMatrixPieces[0].length; j++) {
+        newMatrixPieces[i][j] = {
+          ...newMatrixPieces[i][j],
+          initialImgUri: newMatrixPieces[i][j].imageUri,
+          rotate: 0
+        }
+      }
+    }
 
-  }, [pieces])
+    setLocalPieces(newMatrixPieces);
+
+  }, [pieces, updateDrag])
 
   useEffect(() => {
     if (localPieces.length <= 0) return;
@@ -205,12 +234,17 @@ const FreeStyleDrag = ({ pieces }) => {
   }, [localPieces])
 
   return (
-    <StyledCanvas ref={canvasRef} width="1000" height="1000" />
+    <StyledCanvas ref={canvasRef} width={width * 1.5} height={height * 1.5} />
   )
 }
 
 FreeStyleDrag.propTypes = {
   pieces: PropTypes.array.isRequired,
+  zoom: PropTypes.number.isRequired,
+  width: PropTypes.number.isRequired,
+  height: PropTypes.number.isRequired,
+  updateDrag: PropTypes.bool.isRequired,
+  setUpdateDrag: PropTypes.func.isRequired
 }
 
 export default FreeStyleDrag;
