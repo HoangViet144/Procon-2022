@@ -13,6 +13,7 @@ import FreeStyleDrag from "./freestyleDrag";
 import SwapFree from "./swapFree";
 import { BTN_VALUE } from "./controlBlock";
 import { createImageURI } from "src/util/util";
+import { rotateMatrix90, rotateMatrix180, rotateMatrix270 } from "src/util/util";
 
 const StyledDiv = styled('div')({
   padding: 8,
@@ -294,8 +295,24 @@ const MainGame = () => {
 
 
     let cnt = 0;
+    const curPieces = pieces.slice().map(ele => ele.slice());
+    for (let i = 0; i < curPieces.length; i++) {
+      for (let j = 0; j < curPieces[0].length; j++) {
+        let id = curPieces[i][j].id;
 
-    for (let row of pieces) {
+        let indCol = +id.substring(0, id.indexOf("-"));
+        let indRow = +id.substring(id.indexOf("-") + 1);
+
+        const rotateInd = indRow * initialConfig.colSegment + indCol;
+        let rotateValue = + answer.rotate[rotateInd];
+        if (rotateValue === 1) curPieces[i][j].data = rotateMatrix90(curPieces[i][j].data);
+        if (rotateValue === 2) curPieces[i][j].data = rotateMatrix180(curPieces[i][j].data);
+        if (rotateValue === 3) curPieces[i][j].data = rotateMatrix270(curPieces[i][j].data);
+
+      }
+    }
+
+    for (let row of curPieces) {
       let cellInARow = row.map(ele => ele.data);
       console.log(cellInARow, cellInARow[0].length, cellInARow[0][0].length)
 
