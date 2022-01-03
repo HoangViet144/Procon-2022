@@ -9,8 +9,10 @@ import { convertP6toP3 } from "src/util/convert"
 import Header from "src/views/maingame/header";
 import ImagePieces from "./imagePieces";
 import ControlBlock from "./controlBlock";
+import FreeStyleDrag from "./freestyleDrag";
+import SwapFree from "./swapFree";
 import { BTN_VALUE } from "./controlBlock";
-import { rotateMatrix90 } from "src/util/util";
+import { createImageURI } from "src/util/util";
 
 const StyledDiv = styled('div')({
   padding: 8,
@@ -33,9 +35,11 @@ const MainGame = () => {
     swapCost: 0,
   });
 
-  const [styleObj, setStyleObj] = useState({ spacing: 0, padding: 0, hideId: true });
+  const [styleObj, setStyleObj] = useState({ spacing: 0, padding: 0, hideId: true, marginTop: 0 });
+  const [updateDrag, setUpdateDrag] = useState(false);
   const [pieces, setPieces] = useState([]);
   const [curChoice, setCurChoice] = useState({ id: '' });
+  const [redoAct, setRedoAct] = useState([]);
 
   const [answer, setAnswer] = useState({
     rotate: [],
@@ -71,6 +75,7 @@ const MainGame = () => {
         let piece = initData.slice(i, i + pieceHeight).map(ele => ele.slice(j, j + pieceWidth))
         pieceAr.push({
           data: piece,
+          imageUri: createImageURI(piece),
           width: pieceWidth,
           height: pieceHeight,
           indCol: indCol,
@@ -88,21 +93,15 @@ const MainGame = () => {
     setPieces(pieceMatrix);
 
     setInitAnswer();
+
+    setUpdateDrag(true);
   }
 
   const handleRotate = () => {
     if (curChoice.id === '') return;
-    let indRow = curChoice.indRow;
-    let indCol = curChoice.indCol;
 
-    const curPieceMatrix = [...pieces];
-    const curPiece = { ...curPieceMatrix[indRow][indCol] };
-    curPiece.data = rotateMatrix90(curPiece.data);
-    curPieceMatrix[indRow][indCol] = curPiece;
-    setPieces(curPieceMatrix);
-
-    indCol = +curChoice.id.substring(0, curChoice.id.indexOf("-"));
-    indRow = +curChoice.id.substring(curChoice.id.indexOf("-") + 1);
+    let indCol = +curChoice.id.substring(0, curChoice.id.indexOf("-"));
+    let indRow = +curChoice.id.substring(curChoice.id.indexOf("-") + 1);
 
     const rotateInd = indRow * initialConfig.colSegment + indCol;
     let rotateValue = + answer.rotate[rotateInd];
@@ -113,12 +112,25 @@ const MainGame = () => {
     setAnswer(newAnswer);
   }
 
-  const handleAction = (action) => {
-    console.log(action, curChoice)
-    if (curChoice.id === '') return;
+  const handleRotateBasedOnDrag = (id, rotateValue) => {
+    console.log(id, rotateValue)
+    if (id === '') return;
 
-    const indRow = curChoice.indRow;
-    const indCol = curChoice.indCol;
+    let indCol = +id.substring(0, id.indexOf("-"));
+    let indRow = +id.substring(id.indexOf("-") + 1);
+
+    const rotateInd = indRow * initialConfig.colSegment + indCol;
+    const newAnswer = { ...answer };
+    newAnswer.rotate[rotateInd] = rotateValue;
+    setAnswer(newAnswer);
+  }
+
+  const handleAction = (action, choice = null, actionType = BTN_VALUE.NORMAL_ACT, newActionLst = []) => {
+    if (choice === null) choice = curChoice;
+    if (choice.id === '') return;
+
+    const indRow = choice.indRow;
+    const indCol = choice.indCol;
     const curPieceMatrix = [...pieces];
     let targetRow = indRow;
     let targetCol = indCol;
@@ -154,18 +166,90 @@ const MainGame = () => {
     curPieceMatrix[indRow][indCol] = targetPiece;
     curPieceMatrix[targetRow][targetCol] = curPiece;
     setPieces(curPieceMatrix);
-    setCurChoice(cur => ({
-      ...cur,
-      indCol: curPiece.indCol,
-      indRow: curPiece.indRow
-    }));
 
-    const newAction = [...answer.action]
-    newAction.push({ id: curChoice.id, action });
-    setAnswer(cur => ({
-      ...cur,
-      action: newAction
-    }))
+    switch (actionType) {
+      case BTN_VALUE.UNDO:
+        setAnswer(cur => ({
+          ...cur,
+          action: newActionLst
+        }));
+
+        setCurChoice(cur => ({
+          id: choice.id,
+          indCol: curPiece.indCol,
+          indRow: curPiece.indRow
+        }));
+        break;
+      case BTN_VALUE.NORMAL_ACT:
+        setRedoAct([]);
+      default:
+        setCurChoice(cur => ({
+          ...cur,
+          indCol: curPiece.indCol,
+          indRow: curPiece.indRow
+        }));
+
+        const newAction = [...answer.action]
+        newAction.push({ id: choice.id, action });
+        setAnswer(cur => ({
+          ...cur,
+          action: newAction
+        }));
+    }
+  }
+
+  const handleUndoAction = () => {
+    const curActionLst = [...answer.action];
+    if (curActionLst.length === 0) return;
+    const lastAction = curActionLst.at(-1);
+    const newActionLst = curActionLst.slice(0, -1);
+
+    const allPieces = pieces.flat();
+    const lastPiece = allPieces.filter(ele => ele.id === lastAction.id)[0];
+
+    const inverseAction = {
+      [BTN_VALUE.LEFT]: BTN_VALUE.RIGHT,
+      [BTN_VALUE.RIGHT]: BTN_VALUE.LEFT,
+      [BTN_VALUE.UP]: BTN_VALUE.DOWN,
+      [BTN_VALUE.DOWN]: BTN_VALUE.UP,
+    }
+
+    handleAction(
+      inverseAction[lastAction.action],
+      {
+        id: lastAction.id,
+        indRow: lastPiece.indRow,
+        indCol: lastPiece.indCol
+      },
+      BTN_VALUE.UNDO,
+      newActionLst
+    );
+
+    setRedoAct(cur => [...cur, lastAction]);
+  }
+
+  const handleRedoAction = () => {
+    setRedoAct(cur => {
+      if (cur.length === 0) return [];
+      const curRedoLst = [...cur];
+      const lastAction = curRedoLst.at(-1);
+
+      const allPieces = pieces.flat();
+      const lastPiece = allPieces.filter(ele => ele.id === lastAction.id)[0];
+
+      handleAction(
+        lastAction.action,
+        {
+          id: lastAction.id,
+          indRow: lastPiece.indRow,
+          indCol: lastPiece.indCol
+        },
+        BTN_VALUE.REDO
+      );
+
+      cur.pop();
+      return cur;
+    })
   }
 
   useEffect(() => {
@@ -211,10 +295,31 @@ const MainGame = () => {
       <Grid container alignItems='start' >
         <Grid container item xs={9}>
           <ImagePieces
+            colSegment={initialConfig.colSegment}
+            rotate={answer.rotate}
+            zoom={initialConfig.width > 1000 ? 0.4 : 1}
             curChoice={curChoice}
             setCurChoice={setCurChoice}
             pieces={pieces}
             styleObj={styleObj}
+          />
+          {/* <FreeStyleDrag
+            handleRotateBasedOnDrag={handleRotateBasedOnDrag}
+            updateDrag={updateDrag}
+            setUpdateDrag={setUpdateDrag}
+            width={initialConfig.width}
+            height={initialConfig.height}
+            zoom={initialConfig.width > 1000 ? 0.4 : 1}
+            pieces={pieces}
+          /> */}
+          <SwapFree
+            initialConfig={initialConfig}
+            pieces={pieces}
+            rotate={answer.rotate}
+            styleObj={styleObj}
+            updateDrag={updateDrag}
+            setUpdateDrag={setUpdateDrag}
+            handleRotateBasedOnDrag={handleRotateBasedOnDrag}
           />
         </Grid>
         <Grid container item xs={3}>
@@ -223,6 +328,8 @@ const MainGame = () => {
             handleAction={handleAction}
             getImage={getImage}
             handleRotate={handleRotate}
+            handleUndoAction={handleUndoAction}
+            handleRedoAction={handleRedoAction}
             maxChoice={initialConfig.maxChoice}
             costChoose={initialConfig.chooseCost}
             costSwap={initialConfig.swapCost}

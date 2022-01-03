@@ -11,7 +11,7 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import UndoIcon from '@mui/icons-material/Undo';
 import RedoIcon from '@mui/icons-material/Redo';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 
 export const BTN_VALUE = {
@@ -21,6 +21,7 @@ export const BTN_VALUE = {
   RIGHT: 4,
   UP: 5,
   DOWN: 6,
+  NORMAL_ACT: 7
 };
 
 export const ROTATE_ANGLE = {
@@ -29,11 +30,19 @@ export const ROTATE_ANGLE = {
   DEG270: 3
 };
 
-const ControlBlock = ({ getImage, handleAction, answer, handleRotate, maxChoice,
+const ControlBlock = ({ getImage, answer, handleAction, handleRotate, handleUndoAction, handleRedoAction, maxChoice,
   costSwap, costChoose, toggleStyle, toggleShowId, pieceWidth, pieceHeight, serverInfo }) => {
   const [finalAnswer, setFinalAnswer] = useState('');
   const [totalCost, setTotalCost] = useState(0);
   const [serverResponse, setServerResponse] = useState({ wrongLoc: 0, wrongSwap: 0 })
+
+  const btnRightRef = useRef();
+  const btnLeftRef = useRef();
+  const btnUpRef = useRef();
+  const btnDownRef = useRef();
+  const btnRedoRef = useRef();
+  const btnUndoRef = useRef();
+  const btnRotate = useRef();
 
   const sendAnswer = async () => {
     try {
@@ -46,7 +55,6 @@ const ControlBlock = ({ getImage, handleAction, answer, handleRotate, maxChoice,
         data: JSON.stringify(finalAnswer)
       })
 
-      console.log(res)
     } catch (err) {
       console.log(err)
     }
@@ -58,16 +66,16 @@ const ControlBlock = ({ getImage, handleAction, answer, handleRotate, maxChoice,
       { icon: "Send response", func: sendAnswer }
     ],
     [
-      { icon: <UndoIcon />, value: BTN_VALUE.UNDO, func: handleAction },
-      { icon: <KeyboardArrowUpIcon />, value: BTN_VALUE.UP, func: handleAction },
-      { icon: <RedoIcon />, value: BTN_VALUE.REDO, func: handleAction },
-      { icon: "90deg", value: ROTATE_ANGLE.DEG90, func: handleRotate },
+      { icon: <UndoIcon />, value: BTN_VALUE.UNDO, func: handleUndoAction, ref: btnUndoRef },
+      { icon: <KeyboardArrowUpIcon />, value: BTN_VALUE.UP, func: handleAction, ref: btnUpRef },
+      { icon: <RedoIcon />, value: BTN_VALUE.REDO, func: handleRedoAction, ref: btnRedoRef },
+      { icon: "90deg", value: null, func: handleRotate, ref: btnRotate },
       { icon: <VisibilityIcon />, value: '', func: toggleShowId }
     ],
     [
-      { icon: <KeyboardArrowLeftIcon />, value: BTN_VALUE.LEFT, func: handleAction },
-      { icon: <KeyboardArrowDownIcon />, value: BTN_VALUE.DOWN, func: handleAction },
-      { icon: <KeyboardArrowRightIcon />, value: BTN_VALUE.RIGHT, func: handleAction },
+      { icon: <KeyboardArrowLeftIcon />, value: BTN_VALUE.LEFT, func: handleAction, ref: btnLeftRef },
+      { icon: <KeyboardArrowDownIcon />, value: BTN_VALUE.DOWN, func: handleAction, ref: btnDownRef },
+      { icon: <KeyboardArrowRightIcon />, value: BTN_VALUE.RIGHT, func: handleAction, ref: btnRightRef },
       // { icon: "Remove gap", value: '', func: toggleStyle }
     ]
   ]
@@ -138,14 +146,44 @@ const ControlBlock = ({ getImage, handleAction, answer, handleRotate, maxChoice,
     setTotalCost(cntChoice * costChoose + cntSwap * costSwap);
   }, [finalAnswer, costChoose, costSwap])
 
+  const keyUpHandler = (event) => {
+    if (event.code === "KeyA") {
+      btnLeftRef.current.click();
+    }
+    if (event.code === "KeyW") {
+      btnUpRef.current.click();
+    }
+    if (event.code === "KeyS") {
+      btnDownRef.current.click();
+    }
+    if (event.code === "KeyD") {
+      btnRightRef.current.click();
+    }
+    if (event.code === "KeyQ") {
+      btnUndoRef.current.click();
+    }
+    if (event.code === "KeyE") {
+      btnRedoRef.current.click();
+    }
+    if (event.code === "KeyR") {
+      btnRotate.current.click();
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener("keyup", keyUpHandler);
+    return () => {
+      window.removeEventListener("keyup", keyUpHandler);
+    };
+  }, []);
   return (
-    <Grid container spacing={1}>
+    <Grid container spacing={1} >
       <Grid item container spacing={1}>
         {btnList.map((row, indR) => (
           <Grid container item key={indR} spacing={1}>
             {row.map((ele, ind) => (
               <Grid item key={ind}>
-                <Button variant="outlined" onClick={() => ele.func(ele.value)}>
+                <Button variant="outlined" onClick={() => ele.func(ele.value)} ref={ele.ref}>
                   {ele.icon}
                 </Button>
               </Grid>
@@ -225,6 +263,9 @@ const ControlBlock = ({ getImage, handleAction, answer, handleRotate, maxChoice,
 ControlBlock.propTypes = {
   getImage: PropTypes.func.isRequired,
   handleAction: PropTypes.func.isRequired,
+  handleUndoAction: PropTypes.func.isRequired,
+  handleRedoAction: PropTypes.func.isRequired,
+  handleRotate: PropTypes.func.isRequired,
   maxChoice: PropTypes.number.isRequired,
   costSwap: PropTypes.number.isRequired,
   costChoose: PropTypes.number.isRequired,
