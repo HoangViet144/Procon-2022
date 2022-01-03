@@ -95,6 +95,8 @@ const MainGame = () => {
     setInitAnswer();
 
     setUpdateDrag(true);
+
+    setCurChoice({ id: '' });
   }
 
   const handleRotate = () => {
