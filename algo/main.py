@@ -8,8 +8,8 @@ choice_cost = 15
 rows = 2
 cols = 3
 init_arr = [
-    [3, 0, 2], 
-    [5 ,1, 4]
+    [1, 4, 2], 
+    [0 ,5, 3]
 ]
 
 td = [0, -1, 0, 1]
@@ -55,9 +55,9 @@ class State:
                 new_state = State(new_arr, self.choice_left, (nr, nc))
                 hash_new_state = hash(new_state)
 
-                if hash_new_state not in visited:
-                    neighbors.append((new_state, swap_cost, ta[k]))
-                    visited[hash_new_state] = True
+                # if hash_new_state not in visited:
+                neighbors.append((new_state, swap_cost, ta[k]))
+                # visited[hash_new_state] = True # ko dung visited do dung A*
 
         # change piece
         if self.choice_left > 0:
@@ -68,9 +68,9 @@ class State:
                     new_arr = copy.deepcopy(self.arr)
                     new_state = State(new_arr, self.choice_left-1, (i, j))
                     hash_new_state = hash(new_state)
-                    if hash_new_state not in visited:
-                        neighbors.append((new_state, choice_cost, f'C({i},{j})'))
-                        visited[hash_new_state] = True
+                    # if hash_new_state not in visited:
+                    neighbors.append((new_state, choice_cost, f'C({i},{j})'))
+                        # visited[hash_new_state] = True
 
 
         return neighbors
@@ -79,7 +79,16 @@ class State:
 
         def h0():
             return 0;
-        return h0()
+
+        def h1():
+            '''so manh sai vi tri chia 2'''
+            cnt = 0
+            for i in range(rows):
+                for j in range(cols):
+                    if self.arr[i][j] != i*cols+j:
+                        cnt += 1
+            return (cnt+1)//2
+        return h1()
 
 def solve():
     init_state = State(init_arr, max_choice, None)
@@ -90,13 +99,19 @@ def solve():
     heuristic_cost = init_state.heuristic()
     heapq.heappush(pq, (dist[hstate]+heuristic_cost, init_state, None))
 
-    # print(init_state.is_end_state())
-    # sys.exit(0)
+    cst = 0
 
     solution = None
     while True:
         cost, state, action = heapq.heappop(pq)
-        # print(cost, state.arr, action)
+        if cost != dist[hash(state)] + state.heuristic():
+            continue
+        cst += 1
+        # print(hash(state))
+        # print(cost, state.arr, state.cur_piece, action)
+        # if trace[hash(state)] is not None:
+        #     print(hash(trace[hash(state)][1]), trace[hash(state)][1].arr )
+        # print('--')
         if state.is_end_state():
             solution = state
             break
@@ -104,11 +119,12 @@ def solve():
         neighbors = state.get_neighbors()
         for nei, path_cost, action in neighbors:
             hnei = hash(nei)
-            if hnei not in dist or dist[hnei] < dist[hstate] + path_cost:
+            if hnei not in dist or dist[hnei] > dist[hstate] + path_cost:
                 dist[hnei] = dist[hstate] + path_cost
                 trace[hnei] = action, state
                 heapq.heappush(pq, (dist[hnei] + nei.heuristic(), nei, action))
 
+    print(solution.arr)
     hsol = hash(solution)
     true_cost = dist[hsol]
     path = []
@@ -121,7 +137,10 @@ def solve():
     path = path[::-1]
     print(path, true_cost)
     for s in pathstates[::-1]:
-        print(s)
-
+        # print(s)
+        for r in s:
+            print(r)
+        print()
+    print(cst)
 
 solve()
