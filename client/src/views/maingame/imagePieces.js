@@ -21,6 +21,10 @@ const StyledGrid = styled(Grid)((props) => ({
   zoom: props.zoom
 }));
 
+const StyledSpan = styled('span')((props) => ({
+  fontSize: props.zoom !== 1 ? 40 : 15
+}));
+
 
 const ImagePieces = ({ pieces, curChoice, setCurChoice, styleObj, zoom, rotate, colSegment }) => {
   const getRotateAngle = (ele) => {
@@ -46,7 +50,7 @@ const ImagePieces = ({ pieces, curChoice, setCurChoice, styleObj, zoom, rotate, 
                   imageUri={ele.imageUri}
                   rotateAngle={getRotateAngle(ele)}
                 />
-                {!styleObj.hideId && <span>{ele.displayId}</span>}
+                {!styleObj.hideId && <StyledSpan zoom={zoom}>{ele.displayId}</StyledSpan>}
               </StyledToggleButton>
             </Grid>
           ))}
