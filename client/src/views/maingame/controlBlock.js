@@ -69,7 +69,7 @@ const ControlBlock = ({ getImage, answer, handleAction, handleRotate, handleUndo
       { icon: <UndoIcon />, value: BTN_VALUE.UNDO, func: handleUndoAction, ref: btnUndoRef },
       { icon: <KeyboardArrowUpIcon />, value: BTN_VALUE.UP, func: handleAction, ref: btnUpRef },
       { icon: <RedoIcon />, value: BTN_VALUE.REDO, func: handleRedoAction, ref: btnRedoRef },
-      { icon: "90deg", value: ROTATE_ANGLE.DEG90, func: handleRotate, ref: btnRotate },
+      { icon: "90deg", value: null, func: handleRotate, ref: btnRotate },
       { icon: <VisibilityIcon />, value: '', func: toggleShowId }
     ],
     [

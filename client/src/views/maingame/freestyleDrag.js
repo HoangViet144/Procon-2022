@@ -88,7 +88,7 @@ const isHit = (shape, x, y) => {
   return false;
 }
 
-const FreeStyleDrag = ({ pieces, zoom, width, height, updateDrag, setUpdateDrag }) => {
+const FreeStyleDrag = ({ pieces, zoom, width, height, updateDrag, setUpdateDrag, handleRotateBasedOnDrag }) => {
   const [localPieces, setLocalPieces] = useState([]);
   const canvasRef = useRef();
 
@@ -121,6 +121,8 @@ const FreeStyleDrag = ({ pieces, zoom, width, height, updateDrag, setUpdateDrag 
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     rectangle.render(ctx, curPiece, zoom);
+
+    handleRotateBasedOnDrag(curPiece.id, curPiece.rotate);
   }
 
   const drawPieces = (pieces) => {
@@ -244,7 +246,8 @@ FreeStyleDrag.propTypes = {
   width: PropTypes.number.isRequired,
   height: PropTypes.number.isRequired,
   updateDrag: PropTypes.bool.isRequired,
-  setUpdateDrag: PropTypes.func.isRequired
+  setUpdateDrag: PropTypes.func.isRequired,
+  handleRotateBasedOnDrag: PropTypes.func.isRequired
 }
 
 export default FreeStyleDrag;

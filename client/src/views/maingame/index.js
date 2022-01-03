@@ -11,7 +11,7 @@ import ImagePieces from "./imagePieces";
 import ControlBlock from "./controlBlock";
 import FreeStyleDrag from "./freestyleDrag";
 import { BTN_VALUE } from "./controlBlock";
-import { rotateMatrix90, createImageURI } from "src/util/util";
+import { createImageURI } from "src/util/util";
 
 const StyledDiv = styled('div')({
   padding: 8,
@@ -98,22 +98,26 @@ const MainGame = () => {
 
   const handleRotate = () => {
     if (curChoice.id === '') return;
-    let indRow = curChoice.indRow;
-    let indCol = curChoice.indCol;
 
-    const curPieceMatrix = [...pieces];
-    const curPiece = { ...curPieceMatrix[indRow][indCol] };
-    curPiece.data = rotateMatrix90(curPiece.data);
-    curPieceMatrix[indRow][indCol] = curPiece;
-    setPieces(curPieceMatrix);
-
-    indCol = +curChoice.id.substring(0, curChoice.id.indexOf("-"));
-    indRow = +curChoice.id.substring(curChoice.id.indexOf("-") + 1);
+    let indCol = +curChoice.id.substring(0, curChoice.id.indexOf("-"));
+    let indRow = +curChoice.id.substring(curChoice.id.indexOf("-") + 1);
 
     const rotateInd = indRow * initialConfig.colSegment + indCol;
     let rotateValue = + answer.rotate[rotateInd];
     rotateValue = (rotateValue + 1) % 4;
 
+    const newAnswer = { ...answer };
+    newAnswer.rotate[rotateInd] = rotateValue;
+    setAnswer(newAnswer);
+  }
+
+  const handleRotateBasedOnDrag = (id, rotateValue) => {
+    if (id === '') return;
+
+    let indCol = +id.substring(0, id.indexOf("-"));
+    let indRow = +id.substring(id.indexOf("-") + 1);
+
+    const rotateInd = indRow * initialConfig.colSegment + indCol;
     const newAnswer = { ...answer };
     newAnswer.rotate[rotateInd] = rotateValue;
     setAnswer(newAnswer);
@@ -298,6 +302,7 @@ const MainGame = () => {
             styleObj={styleObj}
           />
           <FreeStyleDrag
+            handleRotateBasedOnDrag={handleRotateBasedOnDrag}
             updateDrag={updateDrag}
             setUpdateDrag={setUpdateDrag}
             width={initialConfig.width}
