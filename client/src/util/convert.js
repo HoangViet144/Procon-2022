@@ -41,66 +41,66 @@ export const convertP6toP3 = async (p6File) => {
 
         let i = 2;
 
-        // drop out # character
-        while (isWhitespace(view[i])) i++;
-        i++;
-        while (isWhitespace(view[i])) i++;
+        // // drop out # character
+        // while (isWhitespace(view[i])) i++;
+        // i++;
+        // while (isWhitespace(view[i])) i++;
 
-        // Extract num of segment
-        const colSegChars = [];
-        while (!isWhitespace(view[i])) {
-          colSegChars.push(view[i]);
-          i++;
-        }
-        const colSegment = parseInt(toString(colSegChars), 10);
+        // // Extract num of segment
+        // const colSegChars = [];
+        // while (!isWhitespace(view[i])) {
+        //   colSegChars.push(view[i]);
+        //   i++;
+        // }
+        // const colSegment = parseInt(toString(colSegChars), 10);
 
-        while (isWhitespace(view[i])) i++;
+        // while (isWhitespace(view[i])) i++;
 
-        const rowSegChars = [];
-        while (!isWhitespace(view[i])) {
-          rowSegChars.push(view[i]);
-          i++;
-        }
-        const rowSegment = parseInt(toString(rowSegChars), 10);
+        // const rowSegChars = [];
+        // while (!isWhitespace(view[i])) {
+        //   rowSegChars.push(view[i]);
+        //   i++;
+        // }
+        // const rowSegment = parseInt(toString(rowSegChars), 10);
 
-        // Drop out # character.
-        while (isWhitespace(view[i])) i++;
-        i++;
-        while (isWhitespace(view[i])) i++;
+        // // Drop out # character.
+        // while (isWhitespace(view[i])) i++;
+        // i++;
+        // while (isWhitespace(view[i])) i++;
 
-        // Extract max choice
-        const choiceChars = [];
-        while (!isWhitespace(view[i])) {
-          choiceChars.push(view[i]);
-          i++;
-        }
-        const maxChoice = parseInt(toString(choiceChars), 10);
+        // // Extract max choice
+        // const choiceChars = [];
+        // while (!isWhitespace(view[i])) {
+        //   choiceChars.push(view[i]);
+        //   i++;
+        // }
+        // const maxChoice = parseInt(toString(choiceChars), 10);
 
-        // Drop out # character.
-        while (isWhitespace(view[i])) i++;
-        i++;
-        while (isWhitespace(view[i])) i++;
+        // // Drop out # character.
+        // while (isWhitespace(view[i])) i++;
+        // i++;
+        // while (isWhitespace(view[i])) i++;
 
-        // Extract cost
-        const chooseCostChars = [];
-        while (!isWhitespace(view[i])) {
-          chooseCostChars.push(view[i]);
-          i++;
-        }
-        const chooseCost = parseInt(toString(chooseCostChars), 10);
+        // // Extract cost
+        // const chooseCostChars = [];
+        // while (!isWhitespace(view[i])) {
+        //   chooseCostChars.push(view[i]);
+        //   i++;
+        // }
+        // const chooseCost = parseInt(toString(chooseCostChars), 10);
 
-        while (isWhitespace(view[i])) i++;
+        // while (isWhitespace(view[i])) i++;
 
-        const swapCostChars = [];
-        while (!isWhitespace(view[i])) {
-          swapCostChars.push(view[i]);
-          i++;
-        }
-        const swapCost = parseInt(toString(swapCostChars), 10);
+        // const swapCostChars = [];
+        // while (!isWhitespace(view[i])) {
+        //   swapCostChars.push(view[i]);
+        //   i++;
+        // }
+        // const swapCost = parseInt(toString(swapCostChars), 10);
 
-        // Drop out # character.
-        while (isWhitespace(view[i])) i++;
-        i++;
+        // // Drop out # character.
+        // while (isWhitespace(view[i])) i++;
+        // i++;
         while (isWhitespace(view[i])) i++;
 
         // Extract the width.
@@ -158,11 +158,11 @@ export const convertP6toP3 = async (p6File) => {
         resolve({
           width: width,
           height: height,
-          rowSegment: rowSegment,
-          colSegment: colSegment,
-          maxChoice: maxChoice,
-          chooseCost: chooseCost,
-          swapCost: swapCost,
+          rowSegment: 1,
+          colSegment: 1,
+          maxChoice: 1,
+          chooseCost: 1,
+          swapCost: 1,
           imageData: convertToRGBArray(imageData)
         });
       } catch (err) {

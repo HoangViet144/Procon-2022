@@ -140,6 +140,7 @@ const MainGame = () => {
       case BTN_VALUE.UP:
         targetRow = (indRow - 1 + initialConfig.rowSegment) % initialConfig.rowSegment;
         targetCol = indCol;
+        console.log(indRow, indCol, targetRow, targetCol, initialConfig.rowSegment)
 
         break;
       case BTN_VALUE.DOWN:
@@ -283,6 +284,41 @@ const MainGame = () => {
     }));
   }
 
+  const exportConfig = () => {
+    let str = 'P3\n';
+    str += '# ' + initialConfig.colSegment.toString() + ' ' + initialConfig.rowSegment.toString() + '\n';
+    str += '# ' + initialConfig.maxChoice.toString() + '\n';
+    str += '# ' + initialConfig.swapCost.toString() + ' ' + initialConfig.chooseCost.toString() + '\n';
+    str += initialConfig.width.toString() + ' ' + initialConfig.height.toString() + '\n';
+    str += '255\n';
+
+
+    let cnt = 0;
+
+    for (let row of pieces) {
+      let cellInARow = row.map(ele => ele.data);
+      console.log(cellInARow, cellInARow[0].length, cellInARow[0][0].length)
+
+      for (let i = 0; i < cellInARow[0].length; i++) { // height of a row
+        for (let j = 0; j < cellInARow.length; j++) {// cell of a row
+          for (let t = 0; t < cellInARow[j][0].length; t++) {//width of a cell
+            const rgb = cellInARow[j][i][t] // pixel at cell j, row i, col t
+            str += rgb.r.toString() + ' ' + rgb.g.toString() + ' ' + rgb.b.toString() + ' ';
+          }
+        }
+        str += '\n';
+        cnt += 1;
+      }
+    }
+    let link = document.createElement('a');
+    link.download = 'datap3.ppm';
+    let blob = new Blob([str], { type: 'text/plain' });
+    link.href = window.URL.createObjectURL(blob);
+    link.click();
+    console.log(str);
+    console.log(cnt)
+  }
+
   return (
     <StyledDiv>
       <Header
@@ -335,6 +371,9 @@ const MainGame = () => {
             pieceHeight={initialConfig.rowSegment === 0 ? 0 : Math.round(initialConfig.height / initialConfig.rowSegment)}
             pieceWidth={initialConfig.colSegment === 0 ? 0 : Math.round(initialConfig.width / initialConfig.colSegment)}
             serverInfo={serverInfo}
+            initialConfig={initialConfig}
+            setInitialConfig={setInitialConfig}
+            exportConfig={exportConfig}
           />
         </Grid>
       </Grid>

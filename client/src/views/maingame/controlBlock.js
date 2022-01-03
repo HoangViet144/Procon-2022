@@ -8,6 +8,7 @@ import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import UndoIcon from '@mui/icons-material/Undo';
 import RedoIcon from '@mui/icons-material/Redo';
@@ -31,7 +32,7 @@ export const ROTATE_ANGLE = {
 };
 
 const ControlBlock = ({ getImage, answer, handleAction, handleRotate, handleUndoAction, handleRedoAction, maxChoice,
-  costSwap, costChoose, toggleStyle, toggleShowId, pieceWidth, pieceHeight, serverInfo }) => {
+  costSwap, costChoose, toggleStyle, toggleShowId, pieceWidth, pieceHeight, serverInfo, initialConfig, setInitialConfig, exportConfig }) => {
   const [finalAnswer, setFinalAnswer] = useState('');
   const [totalCost, setTotalCost] = useState(0);
   const [serverResponse, setServerResponse] = useState({ wrongLoc: 0, wrongSwap: 0 })
@@ -76,6 +77,7 @@ const ControlBlock = ({ getImage, answer, handleAction, handleRotate, handleUndo
       { icon: <KeyboardArrowLeftIcon />, value: BTN_VALUE.LEFT, func: handleAction, ref: btnLeftRef },
       { icon: <KeyboardArrowDownIcon />, value: BTN_VALUE.DOWN, func: handleAction, ref: btnDownRef },
       { icon: <KeyboardArrowRightIcon />, value: BTN_VALUE.RIGHT, func: handleAction, ref: btnRightRef },
+      { icon: <FileDownloadIcon />, value: '', func: exportConfig }
       // { icon: "Remove gap", value: '', func: toggleStyle }
     ]
   ]
@@ -203,21 +205,21 @@ const ControlBlock = ({ getImage, answer, handleAction, handleRotate, handleUndo
       <Grid item xs={4}>
         <TextField
           label='Max choice'
-          disabled
+          onChange={e => setInitialConfig(cur => ({ ...cur, maxChoice: + e.target.value }))}
           value={maxChoice}
         />
       </Grid>
       <Grid item xs={4}>
         <TextField
           label='Cost swap'
-          disabled
+          onChange={e => setInitialConfig(cur => ({ ...cur, swapCost: + e.target.value }))}
           value={costSwap}
         />
       </Grid>
       <Grid item xs={4}>
         <TextField
           label='Cost choice'
-          disabled
+          onChange={e => setInitialConfig(cur => ({ ...cur, chooseCost: + e.target.value }))}
           value={costChoose}
         />
       </Grid>
@@ -254,6 +256,21 @@ const ControlBlock = ({ getImage, answer, handleAction, handleRotate, handleUndo
           label='Piece height'
           disabled
           value={pieceHeight}
+        />
+      </Grid>
+
+      <Grid item xs={6}>
+        <TextField
+          label='Row segment'
+          value={initialConfig.rowSegment}
+          onChange={e => setInitialConfig(cur => ({ ...cur, rowSegment: + e.target.value }))}
+        />
+      </Grid>
+      <Grid item xs={6}>
+        <TextField
+          label='Col segment'
+          value={initialConfig.colSegment}
+          onChange={e => setInitialConfig(cur => ({ ...cur, colSegment: +e.target.value }))}
         />
       </Grid>
     </Grid>
