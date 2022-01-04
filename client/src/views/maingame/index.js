@@ -50,8 +50,8 @@ const MainGame = () => {
     let rotateAr = [];
     for (let i = 0; i < initialConfig.rowSegment * initialConfig.colSegment; i++) rotateAr.push(0);
     setAnswer(cur => ({
-      ...cur,
-      rotate: rotateAr
+      rotate: rotateAr,
+      action: []
     }));
   }
 
